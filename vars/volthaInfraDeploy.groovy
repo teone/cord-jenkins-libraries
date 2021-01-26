@@ -27,12 +27,11 @@ def call(Map config) {
 
     def cfg = defaultConfig + config
 
-    println "Deploying VOLTHA infra with the following parameters: ${cfg}."
+    println "Deploying VOLTHA Infra with the following parameters: ${cfg}."
 
     // TODO support multiple replicas
     sh """
-    helm upgrade --install voltha-infra onf/voltha-infra ${cfg.extraHelmFlags} \
-          --set global.log_level="DEBUG" \
+    helm upgrade --install -n ${cfg.infraNamespace} voltha-infra onf/voltha-infra ${cfg.extraHelmFlags} \
           -f $WORKSPACE/voltha-helm-charts/examples/${cfg.workflow}-values.yaml
     """
 }
