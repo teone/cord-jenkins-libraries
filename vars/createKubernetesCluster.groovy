@@ -4,6 +4,7 @@ def call(Map config) {
     // note that I can't define this outside the function as there's no global scope in Groovy
     def defaultConfig = [
       nodes: 1,
+      name: "kind-ci"
     ]
 
     if (!config) {
@@ -14,6 +15,7 @@ def call(Map config) {
 
     println "Deploying Kind cluster with the following parameters: ${cfg}."
 
+    // TODO support different configs
     def data = """
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
@@ -43,13 +45,13 @@ nodes:
       mv ./voltctl $WORKSPACE/bin/
 
       # start the kind cluster
-      kind create cluster --name ${clusterName} --config kind.cfg
+      kind create cluster --name ${cfg.name} --config kind.cfg
 
       mkdir -p $HOME/.volt
       voltctl -s localhost:55555 config > $HOME/.volt/config
 
       mkdir -p $HOME/.kube
-      kind get kubeconfig --name ${clusterName} > $HOME/.kube/config
+      kind get kubeconfig --name ${cfg.name} > $HOME/.kube/config
 
       # remove NoSchedule taint from nodes
       for MNODE in \$(kubectl get node --selector='node-role.kubernetes.io/master' -o json | jq -r '.items[].metadata.name'); do

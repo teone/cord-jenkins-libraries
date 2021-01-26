@@ -9,6 +9,7 @@ def call(Map config) {
       infraNamespace: "infra",
       volthaNamespace: "voltha",
       workflow: "att",
+      extraHelmFlags: "",
     ]
 
     if (!config) {
@@ -18,4 +19,6 @@ def call(Map config) {
     def cfg = defaultConfig + config
 
     println "Deploying VOLTHA with the following parameters: ${cfg}."
+
+    volthaInfraDeploy(cfg)
 }

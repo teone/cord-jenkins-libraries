@@ -10,7 +10,7 @@
 
 
 def call(Map config) {
-    // note that I can't define this outside the function as there's no global scope in Groovy
+    // NOTE use params or directule extraHelmFlags??
     def defaultConfig = [
       onosReplica: 1,
       atomixReplica: 1,
@@ -18,6 +18,7 @@ def call(Map config) {
       etcdReplica: 1,
       infraNamespace: "infra",
       workflow: "att",
+      extraHelmFlags: "",
     ]
 
     if (!config) {
@@ -28,7 +29,10 @@ def call(Map config) {
 
     println "Deploying VOLTHA infra with the following parameters: ${cfg}."
 
-    sh '''
-    
-    '''
+    // TODO support multiple replicas
+    sh """
+    helm upgrade --install voltha-infra onf/voltha-infra ${cfg.extraHelmFlags} \
+          --set global.log_level="DEBUG" \
+          -f $WORKSPACE/voltha-helm-charts/examples/${cfg.workflow}-values.yaml
+    """
 }
