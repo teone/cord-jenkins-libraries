@@ -1,3 +1,13 @@
+// usage
+//
+// stage('test stage') {
+//   steps {
+//     volthaDeploy([
+//       onosReplica: 3
+//     ])
+//   }
+// }
+
 
 def call(Map config) {
     // note that I can't define this outside the function as there's no global scope in Groovy
@@ -7,7 +17,6 @@ def call(Map config) {
       kafkaReplica: 1,
       etcdReplica: 1,
       infraNamespace: "infra",
-      volthaNamespace: "voltha",
       workflow: "att",
     ]
 
@@ -17,5 +26,9 @@ def call(Map config) {
 
     def cfg = defaultConfig + config
 
-    println "Deploying VOLTHA with the following parameters: ${cfg}."
+    println "Deploying VOLTHA infra with the following parameters: ${cfg}."
+
+    sh '''
+    
+    '''
 }
