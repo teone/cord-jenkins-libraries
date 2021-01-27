@@ -9,7 +9,7 @@ def call(Map config) {
       bbsimReplica: 1,
       infraNamespace: "infra",
       volthaNamespace: "voltha",
-      stackName: "voltha"
+      stackName: "voltha",
       workflow: "att",
       extraHelmFlags: "",
     ]
@@ -23,7 +23,7 @@ def call(Map config) {
     println "Deploying VOLTHA Stack with the following parameters: ${cfg}."
 
     sh """
-    helm upgrade --install -n ${cfg.volthaNamespace} voltha1 onf/voltha-stack ${extraHelmFlags} \
+    helm upgrade --install --create-namespace -n ${cfg.volthaNamespace} ${cfg.stackName} onf/voltha-stack ${extraHelmFlags} \
           --set global.stack_name=${cfg.stackName} \
           --set global.voltha_infra_name=voltha-infra \
           --set global.voltha_infra_namespace=${cfg.infraNamespace} \
@@ -32,9 +32,20 @@ def call(Map config) {
     for(int i = 0;i<cfg.bbsimReplica;i++) {
       // TODO differentiate olt_id between different stacks
        sh """
-         helm upgrade --install -n ${cfg.volthaNamespace} bbsim${i} onf/bbsim ${extraHelmFlags} \
+         helm upgrade --install --create-namespace -n ${cfg.volthaNamespace} bbsim${i} onf/bbsim ${extraHelmFlags} \
          --set olt_id="1${i}" \
          -f $WORKSPACE/voltha-helm-charts/examples/${cfg.workflow}-values.yaml
        """
     }
+
+    println "Wait for VOLTHA Stack ${cfg.stackName} to start"
+
+    sh """
+        set +x
+        voltha=\$(kubectl get pods -n ${cfg.volthaNamespace} -l app.kubernetes.io/part-of=voltha --no-headers | grep "0/" | wc -l)
+        while [[ \$voltha != 0 ]]; do
+          sleep 5
+          voltha=\$(kubectl get pods -n ${cfg.volthaNamespace} -l app.kubernetes.io/part-of=voltha --no-headers | grep "0/" | wc -l)
+        done
+    """
 }

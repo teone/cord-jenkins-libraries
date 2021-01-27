@@ -29,9 +29,13 @@ def call(Map config) {
 
     println "Deploying VOLTHA Infra with the following parameters: ${cfg}."
 
+    sh """
+    kubectl create namespace ${cfg.infraNamespace}
+    kubectl create configmap -n ${cfg.infraNamespace} kube-config "--from-file=kube_config=$KUBECONFIG"
+    """
     // TODO support multiple replicas
     sh """
-    helm upgrade --install -n ${cfg.infraNamespace} voltha-infra onf/voltha-infra ${cfg.extraHelmFlags} \
+    helm upgrade --install --create-namespace -n ${cfg.infraNamespace} voltha-infra onf/voltha-infra ${cfg.extraHelmFlags} \
           -f $WORKSPACE/voltha-helm-charts/examples/${cfg.workflow}-values.yaml
     """
 }
