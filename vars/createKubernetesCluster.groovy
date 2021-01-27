@@ -26,6 +26,7 @@ nodes:
     """
     writeFile(file: 'kind.cfg', text: data)
 
+    // TODO skip cluster creation if cluster is already there
     sh """
       mkdir -p $WORKSPACE/bin
 

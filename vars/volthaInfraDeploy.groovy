@@ -30,8 +30,8 @@ def call(Map config) {
     println "Deploying VOLTHA Infra with the following parameters: ${cfg}."
 
     sh """
-    kubectl create namespace ${cfg.infraNamespace}
-    kubectl create configmap -n ${cfg.infraNamespace} kube-config "--from-file=kube_config=$KUBECONFIG"
+    kubectl create namespace ${cfg.infraNamespace} || true
+    kubectl create configmap -n ${cfg.infraNamespace} kube-config "--from-file=kube_config=$KUBECONFIG"  || true
     """
     // TODO support multiple replicas
     sh """
