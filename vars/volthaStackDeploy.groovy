@@ -48,4 +48,16 @@ def call(Map config) {
           voltha=\$(kubectl get pods -n ${cfg.volthaNamespace} -l app.kubernetes.io/part-of=voltha --no-headers | grep "0/" | wc -l)
         done
     """
+
+    // also make sure that the ONOS config is loaded
+    println "Wait for ONOS Config loader to complete"
+
+    sh """
+        set +x
+        config=\$(kubectl get jobs.batch -n ${cfg.infraNamespace} --no-headers | grep "0/" | wc -l)
+        while [[ \$config != 0 ]]; do
+          sleep 5
+          config=\$(kubectl get jobs.batch -n ${cfg.infraNamespace} --no-headers | grep "0/" | wc -l)
+        done
+    """
 }

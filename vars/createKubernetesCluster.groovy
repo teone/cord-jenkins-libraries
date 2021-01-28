@@ -46,18 +46,21 @@ nodes:
       mv ./voltctl $WORKSPACE/bin/
 
       # start the kind cluster
-      kind create cluster --name ${cfg.name} --config kind.cfg
+      HAVE_CLUSTER="\$(kind get clusters 2>/dev/null | grep -c "${cfg.name}")"
+      if [ "\$HAVE_CLUSTER" -eq 0 ]; then
+        kind create cluster --name ${cfg.name} --config kind.cfg
+
+        # remove NoSchedule taint from nodes
+        for MNODE in \$(kubectl get node --selector='node-role.kubernetes.io/master' -o json | jq -r '.items[].metadata.name'); do
+            kubectl taint node "\$MNODE" node-role.kubernetes.io/master:NoSchedule-
+        done
+      fi
 
       mkdir -p $HOME/.volt
       voltctl -s localhost:55555 config > $HOME/.volt/config
 
       mkdir -p $HOME/.kube
       kind get kubeconfig --name ${cfg.name} > $HOME/.kube/config
-
-      # remove NoSchedule taint from nodes
-      for MNODE in \$(kubectl get node --selector='node-role.kubernetes.io/master' -o json | jq -r '.items[].metadata.name'); do
-          kubectl taint node "\$MNODE" node-role.kubernetes.io/master:NoSchedule-
-      done
 
       # add helm repositories
       helm repo add onf https://charts.opencord.org

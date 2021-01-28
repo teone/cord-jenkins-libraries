@@ -16,11 +16,15 @@ def call(List namespaces = ['default'], List excludes = ['docker-registry']) {
     }
 
     println "Waiting for pods to be removed from namespaces: ${namespaces.join(', ')}."
-    sh """
-      PODS=\$(kubectl get pods --all-namespaces --no-headers  | grep -v -E "kube|${exc}" | wc -l)
-      while [[ \$PODS != 0 ]]; do
+    for(int i = 0;i<namespaces.size();i++) {
+        def n = namespaces[i]
+        sh """
+        set +x
+        PODS=\$(kubectl get pods -n ${n} --no-headers | wc -l)
+        while [[ \$PODS != 0 ]]; do
         sleep 5
-        PODS=\$(kubectl get pods --all-namespaces --no-headers  | grep -v -E "kube|${exc}" | wc -l)
-      done
-    """
+        PODS=\$(kubectl get pods -n ${n} --no-headers | wc -l)
+        done
+        """
+    }
 }
