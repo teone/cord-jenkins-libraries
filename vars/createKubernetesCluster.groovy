@@ -46,15 +46,12 @@ nodes:
       mv ./voltctl $WORKSPACE/bin/
 
       # start the kind cluster
-      HAVE_CLUSTER="\$(kind get clusters 2>/dev/null | grep -c "${cfg.name}")"
-      if [ "\$HAVE_CLUSTER" -eq 0 ]; then
-        kind create cluster --name ${cfg.name} --config kind.cfg
+      kind create cluster --name ${cfg.name} --config kind.cfg
 
-        # remove NoSchedule taint from nodes
-        for MNODE in \$(kubectl get node --selector='node-role.kubernetes.io/master' -o json | jq -r '.items[].metadata.name'); do
-            kubectl taint node "\$MNODE" node-role.kubernetes.io/master:NoSchedule-
-        done
-      fi
+      # remove NoSchedule taint from nodes
+      for MNODE in \$(kubectl get node --selector='node-role.kubernetes.io/master' -o json | jq -r '.items[].metadata.name'); do
+          kubectl taint node "\$MNODE" node-role.kubernetes.io/master:NoSchedule-
+      done
 
       mkdir -p $HOME/.volt
       voltctl -s localhost:55555 config > $HOME/.volt/config
