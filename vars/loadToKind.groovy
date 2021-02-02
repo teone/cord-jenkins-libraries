@@ -1,6 +1,6 @@
 // loads all the images tagged as citest on a Kind cluster
 
-def call(Map cfg) {
+def call(Map config) {
   def defaultConfig = [
     name: "kind-ci"
   ]
@@ -11,12 +11,19 @@ def call(Map cfg) {
 
   def cfg = defaultConfig + config
 
-  def images = sh "docker images | grep citest"
+  def images = sh (
+    script: 'docker images -f "reference=**/*citest" --format "{{.Repository}}"',
+    returnStdout: true
+  ).trim()
 
-  println images
+  def list = images.split("\n")
 
-  println "Loading image ${image} on Kind cluster ${cfg.name}"
+  for(int i = 0;i<list.size();i++) {
+    def image = list[i]
+    println "Loading image ${image} on Kind cluster ${cfg.name}"
 
-
-  // for image in \$(docker images -f "reference=*/*/*citest" --format "{{.Repository}}"); do echo "Pushing \$image to nodes"; kind load docker-image \$image:citest --name ${clusterName} --nodes ${clusterName}-worker,${clusterName}-worker2; done
+    sh """
+      kind load docker-image ${image}:citest --name ${cfg.name} --nodes ${cfg.name}-worker,${cfg.name}-worker2
+    """
+  }
 }
